@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>BoxWise | Smart Box Recommendation</title>
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6fb;
+            color: #1e293b;
+        }
+
+        .navbar {
+            background: #172554;
+            color: white;
+            padding: 22px 6%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h1 {
+            font-size: 25px;
+        }
+
+        .navbar span {
+            color: #93c5fd;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .heading {
+            margin-bottom: 25px;
+        }
+
+        .heading h2 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .heading p {
+            color: #64748b;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.05);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        select {
+            width: 100%;
+            padding: 13px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            margin-bottom: 18px;
+            font-size: 15px;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 13px 24px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        .result-card {
+            background: #ecfdf5;
+            border: 1px solid #86efac;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        .result-card h2 {
+            color: #166534;
+            margin-bottom: 15px;
+        }
+
+        .price {
+            font-size: 32px;
+            font-weight: bold;
+            color: #15803d;
+            margin-top: 12px;
+        }
+
+        .error {
+            background: #fef2f2;
+            color: #b91c1c;
+            padding: 18px;
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 14px;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: left;
+        }
+
+        th {
+            background: #f8fafc;
+        }
+
+        .success {
+            color: #15803d;
+            font-weight: bold;
+        }
+
+        .failed {
+            color: #dc2626;
+            font-weight: bold;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 25px;
+            color: #64748b;
+        }
+
+        @media(max-width: 650px) {
+            table {
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+
+            .navbar {
+                padding: 18px 5%;
+            }
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <nav class="navbar">
+
+        <h1>Box<span>Wise</span></h1>
+
+        <div>
+            <a href="/">Dashboard</a>
+            <a href="/admin/">Admin</a>
+        </div>
+
+    </nav>
+
+
+    <main class="container">
+
+        <section class="heading">
+
+            <h2>Smart Box Recommendation</h2>
+
+            <p>
+                Find the most cost-effective shipping box
+                for your customer orders.
+            </p>
+
+        </section>
+
+
+        <section class="card">
+
+            <h3>Select Customer Order</h3>
+
+            <br>
+
+            <form method="POST">
+
+                {% csrf_token %}
+
+                <label for="order_id">Choose Order</label>
+
+                <select name="order_id" id="order_id" required>
+
+                    <option value="">-- Select Order --</option>
+
+                    {% for order in orders %}
+
+                        <option
+                            value="{{ order.id }}"
+                            {% if selected_order_id == order.id|stringformat:"s" %}
+                                selected
+                            {% endif %}
+                        >
+
+                            {{ order.order_number }}
+
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+                <button type="submit">
+                    Recommend Best Box
+                </button>
+
+            </form>
+
+        </section>
+
+
+        {% if result %}
+
+            {% if result.error %}
+
+                <div class="error">
+                    {{ result.error }}
+                </div>
+
+            {% elif result.recommended %}
+
+                <section class="result-card">
+
+                    <h2>Recommended Shipping Box</h2>
+
+                    <h3>
+                        {{ result.recommended.box.name }}
+                    </h3>
+
+                    <p>
+                        Order Weight:
+                        {{ result.total_weight }} kg
+                    </p>
+
+                    <p class="price">
+                        ₹{{ result.recommended.box.cost }}
+                    </p>
+
+                    <p>
+                        {{ result.recommended.reason }}
+                    </p>
+
+                </section>
+
+            {% else %}
+
+                <div class="error">
+                    No suitable shipping box found.
+                </div>
+
+            {% endif %}
+
+
+            <section class="card">
+
+                <h3>Box Comparison</h3>
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+                            <th>Box</th>
+                            <th>Capacity</th>
+                            <th>Cost</th>
+                            <th>Status</th>
+                            <th>Reason</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for item in result.all_results %}
+
+                            <tr>
+
+                                <td>
+                                    {{ item.box.name }}
+                                </td>
+
+                                <td>
+                                    {{ item.box.max_weight }} kg
+                                </td>
+
+                                <td>
+                                    ₹{{ item.box.cost }}
+                                </td>
+
+                                <td>
+
+                                    {% if item.feasible %}
+
+                                        <span class="success">
+                                            Suitable
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="failed">
+                                            Rejected
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                                <td>
+                                    {{ item.reason }}
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </section>
+
+        {% endif %}
+
+    </main>
+
+
+    <footer class="footer">
+
+        BoxWise © 2026 | Smart Shipping Recommendation System
+
+    </footer>
+
+</body>
+
+</html>

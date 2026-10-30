@@ -1,0 +1,1 @@
+This assignment helped me understand how to structure a Django project into multiple applications. I learned about model relationships, REST API development, separating business logic from views, and writing unit tests. The most challenging part was designing the box recommendation logic and ensuring that dimensions and weight constraints were correctly handled.
